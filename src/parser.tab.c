@@ -67,7 +67,7 @@
 /* Copy the first part of user declarations.  */
 
 /* Line 189 of yacc.c  */
-#line 1 "tradutor.y"
+#line 1 "parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,11 +86,11 @@ char* processarHttp(const char* url, const char* dados);
 
 
 /* Line 189 of yacc.c  */
-#line 90 "tradutor.tab.c"
+#line 90 "parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+# define YYDEBUG 1
 #endif
 
 /* Enabling verbose error messages.  */
@@ -168,7 +168,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 18 "tradutor.y"
+#line 18 "parser.y"
 
     int ival;
     char *sval;
@@ -176,7 +176,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 180 "tradutor.tab.c"
+#line 180 "parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -188,7 +188,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 192 "tradutor.tab.c"
+#line 192 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -1529,7 +1529,7 @@ yyreduce:
         case 2:
 
 /* Line 1464 of yacc.c  */
-#line 49 "tradutor.y"
+#line 49 "parser.y"
     {
         fprintf(output_file, "}\n\nvoid loop() {\n%s}\n", (yyvsp[(3) - (3)].sval));
         free((yyvsp[(3) - (3)].sval));
@@ -1540,21 +1540,21 @@ yyreduce:
   case 3:
 
 /* Line 1464 of yacc.c  */
-#line 57 "tradutor.y"
+#line 57 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 4:
 
 /* Line 1464 of yacc.c  */
-#line 58 "tradutor.y"
+#line 58 "parser.y"
     { free((yyvsp[(1) - (2)].sval)); free((yyvsp[(2) - (2)].sval)); (yyval.sval) = strdup(""); ;}
     break;
 
   case 5:
 
 /* Line 1464 of yacc.c  */
-#line 63 "tradutor.y"
+#line 63 "parser.y"
     {
         if(strcmp((yyvsp[(2) - (5)].sval), "int") == 0) {
             fprintf(output_file, "int %s;\n", (yyvsp[(4) - (5)].sval));
@@ -1572,35 +1572,35 @@ yyreduce:
   case 6:
 
 /* Line 1464 of yacc.c  */
-#line 78 "tradutor.y"
+#line 78 "parser.y"
     { (yyval.sval) = strdup("int"); ;}
     break;
 
   case 7:
 
 /* Line 1464 of yacc.c  */
-#line 79 "tradutor.y"
+#line 79 "parser.y"
     { (yyval.sval) = strdup("bool"); ;}
     break;
 
   case 8:
 
 /* Line 1464 of yacc.c  */
-#line 80 "tradutor.y"
+#line 80 "parser.y"
     { (yyval.sval) = strdup("String"); ;}
     break;
 
   case 9:
 
 /* Line 1464 of yacc.c  */
-#line 84 "tradutor.y"
+#line 84 "parser.y"
     { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 10:
 
 /* Line 1464 of yacc.c  */
-#line 86 "tradutor.y"
+#line 86 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (3)].sval)) + strlen((yyvsp[(3) - (3)].sval)) + 3);
         sprintf((yyval.sval), "%s, %s", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -1612,7 +1612,7 @@ yyreduce:
   case 11:
 
 /* Line 1464 of yacc.c  */
-#line 96 "tradutor.y"
+#line 96 "parser.y"
     {
         fprintf(output_file, "\nvoid setup() {\n%s", (yyvsp[(2) - (3)].sval));
         free((yyvsp[(2) - (3)].sval));
@@ -1623,14 +1623,14 @@ yyreduce:
   case 12:
 
 /* Line 1464 of yacc.c  */
-#line 104 "tradutor.y"
+#line 104 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 13:
 
 /* Line 1464 of yacc.c  */
-#line 106 "tradutor.y"
+#line 106 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -1642,21 +1642,21 @@ yyreduce:
   case 19:
 
 /* Line 1464 of yacc.c  */
-#line 123 "tradutor.y"
+#line 123 "parser.y"
     { (yyval.sval) = (yyvsp[(2) - (3)].sval); ;}
     break;
 
   case 20:
 
 /* Line 1464 of yacc.c  */
-#line 127 "tradutor.y"
+#line 127 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 21:
 
 /* Line 1464 of yacc.c  */
-#line 129 "tradutor.y"
+#line 129 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -1668,7 +1668,7 @@ yyreduce:
   case 30:
 
 /* Line 1464 of yacc.c  */
-#line 150 "tradutor.y"
+#line 150 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].sval)) + 20);
         sprintf((yyval.sval), "%s = %s;\n", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].sval));
@@ -1680,7 +1680,7 @@ yyreduce:
   case 31:
 
 /* Line 1464 of yacc.c  */
-#line 160 "tradutor.y"
+#line 160 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalWrite(%s, HIGH);\n", (yyvsp[(2) - (3)].sval));
@@ -1691,7 +1691,7 @@ yyreduce:
   case 32:
 
 /* Line 1464 of yacc.c  */
-#line 166 "tradutor.y"
+#line 166 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalWrite(%s, LOW);\n", (yyvsp[(2) - (3)].sval));
@@ -1702,7 +1702,7 @@ yyreduce:
   case 33:
 
 /* Line 1464 of yacc.c  */
-#line 175 "tradutor.y"
+#line 175 "parser.y"
     {
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "pinMode(%s, OUTPUT);\n", (yyvsp[(2) - (5)].sval));
@@ -1713,7 +1713,7 @@ yyreduce:
   case 34:
 
 /* Line 1464 of yacc.c  */
-#line 181 "tradutor.y"
+#line 181 "parser.y"
     {
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "pinMode(%s, INPUT);\n", (yyvsp[(2) - (5)].sval));
@@ -1724,7 +1724,7 @@ yyreduce:
   case 35:
 
 /* Line 1464 of yacc.c  */
-#line 190 "tradutor.y"
+#line 190 "parser.y"
     {
         (yyval.sval) = malloc(200);
         sprintf((yyval.sval), "ledcSetup(%d, %d, %d);\nledcAttachPin(%s, %d);\n",
@@ -1737,7 +1737,7 @@ yyreduce:
   case 36:
 
 /* Line 1464 of yacc.c  */
-#line 201 "tradutor.y"
+#line 201 "parser.y"
     {
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "ledcWrite(%d, %s);\n", canalPWM-1, (yyvsp[(5) - (6)].sval));
@@ -1749,7 +1749,7 @@ yyreduce:
   case 37:
 
 /* Line 1464 of yacc.c  */
-#line 211 "tradutor.y"
+#line 211 "parser.y"
     {
         (yyval.sval) = malloc(500);
         sprintf((yyval.sval),
@@ -1768,7 +1768,7 @@ yyreduce:
   case 38:
 
 /* Line 1464 of yacc.c  */
-#line 228 "tradutor.y"
+#line 228 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "Serial.begin(%d);\n", (yyvsp[(2) - (3)].ival));
@@ -1778,7 +1778,7 @@ yyreduce:
   case 39:
 
 /* Line 1464 of yacc.c  */
-#line 236 "tradutor.y"
+#line 236 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(2) - (3)].sval)) + 30);
         sprintf((yyval.sval), "Serial.println(%s);\n", (yyvsp[(2) - (3)].sval));
@@ -1789,7 +1789,7 @@ yyreduce:
   case 40:
 
 /* Line 1464 of yacc.c  */
-#line 245 "tradutor.y"
+#line 245 "parser.y"
     {
         (yyval.sval) = processarHttp((yyvsp[(2) - (4)].sval), (yyvsp[(3) - (4)].sval));
         free((yyvsp[(2) - (4)].sval));
@@ -1800,7 +1800,7 @@ yyreduce:
   case 41:
 
 /* Line 1464 of yacc.c  */
-#line 254 "tradutor.y"
+#line 254 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(2) - (7)].sval)) + strlen((yyvsp[(5) - (7)].sval)) + strlen((yyvsp[(6) - (7)].sval)) + 50);
         sprintf((yyval.sval), "if (%s) {\n%s%s}\n", (yyvsp[(2) - (7)].sval), (yyvsp[(5) - (7)].sval), (yyvsp[(6) - (7)].sval));
@@ -1811,14 +1811,14 @@ yyreduce:
   case 42:
 
 /* Line 1464 of yacc.c  */
-#line 262 "tradutor.y"
+#line 262 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 43:
 
 /* Line 1464 of yacc.c  */
-#line 264 "tradutor.y"
+#line 264 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(3) - (3)].sval)) + 20);
         sprintf((yyval.sval), "else {\n%s}\n", (yyvsp[(3) - (3)].sval));
@@ -1829,7 +1829,7 @@ yyreduce:
   case 44:
 
 /* Line 1464 of yacc.c  */
-#line 273 "tradutor.y"
+#line 273 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(3) - (4)].sval)) + 50);
         sprintf((yyval.sval), "while(true) {\n%s}\n", (yyvsp[(3) - (4)].sval));
@@ -1840,126 +1840,126 @@ yyreduce:
   case 45:
 
 /* Line 1464 of yacc.c  */
-#line 281 "tradutor.y"
+#line 281 "parser.y"
     { (yyval.sval) = concatenarExpressao("==", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 46:
 
 /* Line 1464 of yacc.c  */
-#line 282 "tradutor.y"
+#line 282 "parser.y"
     { (yyval.sval) = concatenarExpressao("!=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 47:
 
 /* Line 1464 of yacc.c  */
-#line 283 "tradutor.y"
+#line 283 "parser.y"
     { (yyval.sval) = concatenarExpressao("<", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 48:
 
 /* Line 1464 of yacc.c  */
-#line 284 "tradutor.y"
+#line 284 "parser.y"
     { (yyval.sval) = concatenarExpressao(">", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 49:
 
 /* Line 1464 of yacc.c  */
-#line 285 "tradutor.y"
+#line 285 "parser.y"
     { (yyval.sval) = concatenarExpressao("<=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 50:
 
 /* Line 1464 of yacc.c  */
-#line 286 "tradutor.y"
+#line 286 "parser.y"
     { (yyval.sval) = concatenarExpressao(">=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 51:
 
 /* Line 1464 of yacc.c  */
-#line 287 "tradutor.y"
+#line 287 "parser.y"
     { (yyval.sval) = concatenarExpressao("+", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 52:
 
 /* Line 1464 of yacc.c  */
-#line 288 "tradutor.y"
+#line 288 "parser.y"
     { (yyval.sval) = concatenarExpressao("-", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 53:
 
 /* Line 1464 of yacc.c  */
-#line 289 "tradutor.y"
+#line 289 "parser.y"
     { (yyval.sval) = concatenarExpressao("*", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 54:
 
 /* Line 1464 of yacc.c  */
-#line 290 "tradutor.y"
+#line 290 "parser.y"
     { (yyval.sval) = concatenarExpressao("/", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 55:
 
 /* Line 1464 of yacc.c  */
-#line 291 "tradutor.y"
+#line 291 "parser.y"
     { (yyval.sval) = (yyvsp[(2) - (3)].sval); ;}
     break;
 
   case 56:
 
 /* Line 1464 of yacc.c  */
-#line 292 "tradutor.y"
+#line 292 "parser.y"
     { (yyval.sval) = malloc(20); sprintf((yyval.sval), "%d", (yyvsp[(1) - (1)].ival)); ;}
     break;
 
   case 57:
 
 /* Line 1464 of yacc.c  */
-#line 293 "tradutor.y"
+#line 293 "parser.y"
     { (yyval.sval) = malloc(10); sprintf((yyval.sval), (yyvsp[(1) - (1)].ival) ? "true" : "false"); ;}
     break;
 
   case 58:
 
 /* Line 1464 of yacc.c  */
-#line 294 "tradutor.y"
+#line 294 "parser.y"
     { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 59:
 
 /* Line 1464 of yacc.c  */
-#line 295 "tradutor.y"
+#line 295 "parser.y"
     { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 60:
 
 /* Line 1464 of yacc.c  */
-#line 296 "tradutor.y"
+#line 296 "parser.y"
     { (yyval.sval) = (yyvsp[(1) - (1)].sval); ;}
     break;
 
   case 61:
 
 /* Line 1464 of yacc.c  */
-#line 297 "tradutor.y"
+#line 297 "parser.y"
     { (yyval.sval) = strdup("Serial.readString()"); ;}
     break;
 
   case 62:
 
 /* Line 1464 of yacc.c  */
-#line 302 "tradutor.y"
+#line 302 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalRead(%s)", (yyvsp[(2) - (2)].sval));
@@ -1970,7 +1970,7 @@ yyreduce:
   case 63:
 
 /* Line 1464 of yacc.c  */
-#line 308 "tradutor.y"
+#line 308 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "analogRead(%s)", (yyvsp[(2) - (2)].sval));
@@ -1981,14 +1981,14 @@ yyreduce:
   case 64:
 
 /* Line 1464 of yacc.c  */
-#line 316 "tradutor.y"
+#line 316 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 65:
 
 /* Line 1464 of yacc.c  */
-#line 318 "tradutor.y"
+#line 318 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -2000,7 +2000,7 @@ yyreduce:
   case 66:
 
 /* Line 1464 of yacc.c  */
-#line 328 "tradutor.y"
+#line 328 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "delay(%d);\n", (yyvsp[(2) - (3)].ival));
@@ -2010,7 +2010,7 @@ yyreduce:
 
 
 /* Line 1464 of yacc.c  */
-#line 2014 "tradutor.tab.c"
+#line 2014 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2222,7 +2222,7 @@ yyreturn:
 
 
 /* Line 1684 of yacc.c  */
-#line 334 "tradutor.y"
+#line 334 "parser.y"
 
 
 void yyerror(const char *s) {
@@ -2250,18 +2250,19 @@ char* processarHttp(const char* url, const char* dados) {
 }
 
 int main(int argc, char *argv[]) {
+    yydebug = 1;
     output_file = fopen("saida.cpp", "w");
     if(!output_file) {
         perror("Erro ao criar arquivo de saída");
         return 1;
     }
-    
+
     fprintf(output_file, "#include <Arduino.h>\n");
     fprintf(output_file, "#include <WiFi.h>\n");
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuração do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
-    
+
     yyparse();
     return 0;
 }

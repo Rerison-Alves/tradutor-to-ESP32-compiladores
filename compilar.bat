@@ -1,9 +1,9 @@
 @echo off
-cd .\regras\
-flex tradutor.l
-bison -d tradutor.y
+cd .\src\
+flex lexer.l
+bison -d --debug parser.y
 cd ..
-gcc -o tradutor .\regras\tradutor.tab.c .\regras\lex.yy.c
+gcc -o tradutor .\src\parser.tab.c .\src\lex.yy.c
 
 IF %ERRORLEVEL% NEQ 0 (
     echo Erro durante a compilacao.
@@ -12,7 +12,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 echo Compilacao completa. Execute com:
-echo .\tradutor.exe '.\arquivo_programa.txt'
+echo .\tradutor.exe '.\arquivo_input'
 echo.
 
 pause

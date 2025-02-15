@@ -31,11 +31,11 @@ char* processarHttp(const char* url, const char* dados);
 %token <ival> INTEIRO_LIT BOOL_LIT
 %token <sval> TEXTO_LIT IDENT
 
-%type <sval> programa declaracoes declaracao_var tipo lista_ids 
-%type <sval> config blocos_config bloco_config repita blocos_repita 
-%type <sval> bloco_repita atribuicao controle_gpio config_pin config_pwm 
-%type <sval> ajustar_pwm conectar_wifi config_serial escrever_serial 
-%type <sval> enviar_http condicional cond_else enquanto_loop expressao 
+%type <sval> programa declaracoes declaracao_var tipo lista_ids
+%type <sval> config blocos_config bloco_config repita blocos_repita
+%type <sval> bloco_repita atribuicao controle_gpio config_pin config_pwm
+%type <sval> ajustar_pwm conectar_wifi config_serial escrever_serial
+%type <sval> enviar_http condicional cond_else enquanto_loop expressao
 %type <sval> leitura comandos esperar
 
 %left MAIS MENOS
@@ -358,18 +358,19 @@ char* processarHttp(const char* url, const char* dados) {
 }
 
 int main(int argc, char *argv[]) {
+    yydebug = 1;
     output_file = fopen("saida.cpp", "w");
     if(!output_file) {
         perror("Erro ao criar arquivo de saída");
         return 1;
     }
-    
+
     fprintf(output_file, "#include <Arduino.h>\n");
     fprintf(output_file, "#include <WiFi.h>\n");
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuração do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
-    
+
     yyparse();
     return 0;
 }

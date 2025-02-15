@@ -1,5 +1,5 @@
 %{
-#include "tradutor.tab.h"
+#include "parser.tab.h"
 #include <string.h>
 void yyerror(const char *s);
 %}
