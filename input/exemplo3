@@ -18,5 +18,11 @@ repita
         i = i + 1;
     fim
 
+    se i <= 10 entao
+        escreverSerial i;
+    senao
+        escreverSerial j;
+    fim
+
     esperar 2000;
 fim

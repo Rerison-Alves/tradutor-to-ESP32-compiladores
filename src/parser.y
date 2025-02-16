@@ -36,7 +36,7 @@ char* processarHttp(const char* url, const char* dados);
 %type <sval> config blocos_config bloco_config repita blocos_repita
 %type <sval> bloco_repita atribuicao controle_gpio config_pin config_pwm
 %type <sval> ajustar_pwm conectar_wifi config_serial escrever_serial
-%type <sval> enviar_http condicional cond_else enquanto_expressao enquanto_loop expressao
+%type <sval> enviar_http condicional enquanto_expressao enquanto_loop expressao
 %type <sval> leitura comandos esperar
 
 %left MAIS MENOS
@@ -252,23 +252,19 @@ enviar_http:
     ;
 
 condicional:
-    SE expressao ENTAO '\n' comandos cond_else FIM
-    {
-        $$ = malloc(strlen($2) + strlen($5) + strlen($6) + 50);
-        sprintf($$, "if (%s) {\n%s%s}\n", $2, $5, $6);
-        free($2); free($5); free($6);
-    }
-    ;
-
-cond_else:
-    /* empty */ { $$ = strdup(""); }
-    | SENAO '\n' comandos
-    {
-        $$ = malloc(strlen($3) + 20);
-        sprintf($$, "else {\n%s}\n", $3);
-        free($3);
-    }
-    ;
+      SE expressao ENTAO comandos SENAO comandos FIM
+      {
+          $$ = malloc(strlen($2) + strlen($4) + strlen($6) + 50);
+          sprintf($$, "if (%s) {\n%s} else {\n%s}\n", $2, $4, $6);
+          free($2); free($4); free($6);
+      }
+      | SE expressao ENTAO comandos FIM
+      {
+          $$ = malloc(strlen($2) + strlen($4) + 50);
+          sprintf($$, "if (%s) {\n%s}\n", $2, $4);
+          free($2); free($4);
+      }
+;
 
 enquanto_expressao:
     ENQUANTO expressao ENTAO comandos FIM
@@ -278,16 +274,16 @@ enquanto_expressao:
         free($2);
         free($4);
     }
-    ;
+;
 
 enquanto_loop:
-    ENQUANTO '\n' comandos FIM
+    ENQUANTO comandos FIM
     {
-        $$ = malloc(strlen($3) + 50);
-        sprintf($$, "while(true) {\n%s}\n", $3);
-        free($3);
+        $$ = malloc(strlen($2) + 50);
+        sprintf($$, "while(true) {\n%s}\n", $2);
+        free($2);
     }
-    ;
+;
 
 expressao:
     expressao IGUAL expressao       { $$ = concatenarExpressao("==", $1, $3); }
