@@ -32,6 +32,7 @@ TEXTO   \"([^\\\"]|\\.)*\"
 "configurarPWM" { return CONFIG_PWM; }
 "ajustarPWM"    { return AJUSTAR_PWM; }
 "com"           { return COM; }
+"valor"         { return VALOR; }
 "frequencia"    { return FREQUENCIA; }
 "resolucao"     { return RESOLUCAO; }
 "conectarWifi"  { return CONECTAR_WIFI; }
@@ -44,6 +45,7 @@ TEXTO   \"([^\\\"]|\\.)*\"
 "senao"         { return SENAO; }
 "entao"         { return ENTAO; }
 "enquanto"      { return ENQUANTO; }
+"="             { return RECEBE; }
 "=="            { return IGUAL; }
 "!="            { return DIFERENTE; }
 "<"             { return MENOR; }
@@ -56,6 +58,7 @@ TEXTO   \"([^\\\"]|\\.)*\"
 "/"             { return DIV; }
 ":"             { return ':'; }
 ";"             { return ';'; }
+","             { return ','; }
 
 {INTEIRO}       { yylval.ival = atoi(yytext); return INTEIRO_LIT; }
 "verdadeiro"    { yylval.ival = 1; return BOOL_LIT; }

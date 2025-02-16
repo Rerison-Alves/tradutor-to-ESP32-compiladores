@@ -26,7 +26,7 @@ char* processarHttp(const char* url, const char* dados);
 %token COM FREQUENCIA RESOLUCAO CONECTAR_WIFI ENVIAR_HTTP
 %token CONFIG_SERIAL ESCREVER_SERIAL LER_SERIAL ESPERAR
 %token SE SENAO ENTAO ENQUANTO VALOR
-%token IGUAL DIFERENTE MENOR MAIOR MENOR_IGUAL MAIOR_IGUAL
+%token RECEBE IGUAL DIFERENTE MENOR MAIOR MENOR_IGUAL MAIOR_IGUAL
 %token MAIS MENOS MULT DIV
 %token <ival> INTEIRO_LIT BOOL_LIT
 %token <sval> TEXTO_LIT IDENT
@@ -146,7 +146,7 @@ bloco_repita:
     ;
 
 atribuicao:
-    IDENT '=' expressao ';'
+    IDENT RECEBE expressao ';'
     {
         $$ = malloc(strlen($1) + strlen($3) + 20);
         sprintf($$, "%s = %s;\n", $1, $3);
