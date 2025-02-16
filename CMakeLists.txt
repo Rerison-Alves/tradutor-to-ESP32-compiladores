@@ -5,3 +5,4 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(BISON)
 find_package(FLEX)
+add_executable(new_target saida.cpp)

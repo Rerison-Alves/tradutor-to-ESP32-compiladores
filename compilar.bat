@@ -11,6 +11,7 @@ IF %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+
 echo Compilacao completa. Execute com:
 echo .\tradutor.exe '.\arquivo_input'
 echo.

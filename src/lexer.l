@@ -54,15 +54,17 @@ TEXTO   \"([^\\\"]|\\.)*\"
 "-"             { return MENOS; }
 "*"             { return MULT; }
 "/"             { return DIV; }
+":"             { return ':'; }
+";"             { return ';'; }
 
 {INTEIRO}       { yylval.ival = atoi(yytext); return INTEIRO_LIT; }
 "verdadeiro"    { yylval.ival = 1; return BOOL_LIT; }
 "falso"         { yylval.ival = 0; return BOOL_LIT; }
 {TEXTO}         { yylval.sval = strdup(yytext); return TEXTO_LIT; }
-{ID}            { yylval.sval = strdup(yytext); return IDENT; }
+{ID}            { printf("Token IDENT encontrado: %s\n", yytext); yylval.sval = strdup(yytext); return IDENT; }
 
 [ \t\n]         ; // Ignora espaços, tabs e novas linhas
 "//".*          ; // Ignora comentários
-.               { yyerror("Caractere inválido"); }
+.               { yyerror("Caractere invalido"); }
 
 %%
