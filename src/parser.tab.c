@@ -1742,7 +1742,7 @@ yyreduce:
 #line 201 "parser.y"
     {
         (yyval.sval) = malloc(100);
-        sprintf((yyval.sval), "ledcWrite(%d, %s);\n", canalPWM-1, (yyvsp[(5) - (6)].sval));
+        sprintf((yyval.sval), "ledcWrite(canalPWM, %s);\n", (yyvsp[(5) - (6)].sval));
         free((yyvsp[(2) - (6)].sval));
         free((yyvsp[(5) - (6)].sval));
     ;}

@@ -200,7 +200,7 @@ ajustar_pwm:
     AJUSTAR_PWM IDENT COM VALOR expressao ';'
     {
         $$ = malloc(100);
-        sprintf($$, "ledcWrite(%d, %s);\n", canalPWM-1, $5);
+        sprintf($$, "ledcWrite(canalPWM, %s);\n", $5);
         free($2);
         free($5);
     }

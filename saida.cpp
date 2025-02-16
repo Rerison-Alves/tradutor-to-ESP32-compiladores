@@ -25,9 +25,9 @@ Serial.println("Conectado ao WiFi!");
 
 void loop() {
 brilho = 128;
-ledcWrite(0, brilho);
+ledcWrite(canalPWM, brilho);
 delay(1000);
 brilho = 0;
-ledcWrite(0, brilho);
+ledcWrite(canalPWM, brilho);
 delay(1000);
 }
