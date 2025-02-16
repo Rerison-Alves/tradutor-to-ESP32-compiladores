@@ -1,0 +1,17 @@
+var inteiro: led_pin;
+var texto: wifi_ssid, wifi_pass;
+
+config
+    configurar led_pin como saida;
+    configurarSerial 115200;
+    conectarWifi wifi_ssid wifi_pass;
+fim
+
+repita
+    ligar led_pin;
+    enviarHttp "http://example.com/api" "led=on";
+    esperar 1000;
+    desligar led_pin;
+    enviarHttp "http://example.com/api" "led=off";
+    esperar 1000;
+fim

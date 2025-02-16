@@ -5,17 +5,16 @@
 // Configuração do PWM
 int canalPWM = 0;
 
-int ledPin, brilho;
-String ssid, senha;
+// Resposta Http
+int httpResponseCode = 0;
+
+int led_pin;
+String wifi_ssid, wifi_pass;
 
 void setup() {
-ledPin = 2;
-ssid = "MinhaRedeWiFi";
-senha = "MinhaSenhaWiFi";
-pinMode(ledPin, OUTPUT);
-ledcSetup(0, 5000, 8);
-ledcAttachPin(ledPin, 0);
-WiFi.begin(ssid.c_str(), senha.c_str());
+pinMode(led_pin, OUTPUT);
+Serial.begin(115200);
+WiFi.begin(wifi_ssid.c_str(), wifi_pass.c_str());
 while(WiFi.status() != WL_CONNECTED) {
   delay(500);
   Serial.println("Conectando ao WiFi...");
@@ -24,10 +23,18 @@ Serial.println("Conectado ao WiFi!");
 }
 
 void loop() {
-brilho = 128;
-ledcWrite(canalPWM, brilho);
+digitalWrite(led_pin, HIGH);
+HTTPClient http;
+http.begin("http://example.com/api");
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+httpResponseCode = http.POST("led=on");
+http.end();
 delay(1000);
-brilho = 0;
-ledcWrite(canalPWM, brilho);
+digitalWrite(led_pin, LOW);
+HTTPClient http;
+http.begin("http://example.com/api");
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+httpResponseCode = http.POST("led=off");
+http.end();
 delay(1000);
 }

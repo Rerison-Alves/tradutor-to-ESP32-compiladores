@@ -1,0 +1,22 @@
+var inteiro: i;
+var inteiro: j;
+
+config
+    configurarSerial 115200;
+fim
+
+repita
+    j = 2;
+    enquanto
+        escreverSerial j;
+        j = j + 2;
+    fim
+
+    i = 1;
+    enquanto i <= 10 entao
+        escreverSerial i;
+        i = i + 1;
+    fim
+
+    esperar 2000;
+fim

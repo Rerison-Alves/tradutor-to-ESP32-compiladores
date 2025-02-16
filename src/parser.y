@@ -5,6 +5,7 @@
 
 FILE *output_file;
 int canalPWM = 0;
+int httpResponseCode = 0;
 int currentLine = 1;
 
 void yyerror(const char *s);
@@ -35,7 +36,7 @@ char* processarHttp(const char* url, const char* dados);
 %type <sval> config blocos_config bloco_config repita blocos_repita
 %type <sval> bloco_repita atribuicao controle_gpio config_pin config_pwm
 %type <sval> ajustar_pwm conectar_wifi config_serial escrever_serial
-%type <sval> enviar_http condicional cond_else enquanto_loop expressao
+%type <sval> enviar_http condicional cond_else enquanto_expressao enquanto_loop expressao
 %type <sval> leitura comandos esperar
 
 %left MAIS MENOS
@@ -140,6 +141,7 @@ bloco_repita:
     | ajustar_pwm
     | esperar
     | condicional
+    | enquanto_expressao
     | enquanto_loop
     | enviar_http
     | escrever_serial
@@ -268,6 +270,16 @@ cond_else:
     }
     ;
 
+enquanto_expressao:
+    ENQUANTO expressao ENTAO comandos FIM
+    {
+        $$ = malloc(strlen($2) + strlen($4) + 50);
+        sprintf($$, "while (%s) {\n%s}\n", $2, $4);
+        free($2);
+        free($4);
+    }
+    ;
+
 enquanto_loop:
     ENQUANTO '\n' comandos FIM
     {
@@ -351,7 +363,7 @@ char* processarHttp(const char* url, const char* dados) {
         "HTTPClient http;\n"
         "http.begin(%s);\n"
         "http.addHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\n"
-        "int httpResponseCode = http.POST(%s);\n"
+        "httpResponseCode = http.POST(%s);\n"
         "http.end();\n",
         url, dados);
     return result;
@@ -370,6 +382,8 @@ int main(int argc, char *argv[]) {
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuração do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
+    fprintf(output_file, "// Resposta Http\n");
+    fprintf(output_file, "int httpResponseCode = 0;\n\n");
 
     yyparse();
     return 0;
