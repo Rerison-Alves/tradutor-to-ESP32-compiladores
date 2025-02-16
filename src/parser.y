@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 FILE *output_file;
 int canalPWM = 0;
@@ -64,6 +65,27 @@ void insertSymbol(const char* name, VarType type) {
     Symbol* newSymbol = createSymbol(name, type);
     newSymbol->next = symbolTable;
     symbolTable = newSymbol;
+}
+
+VarType inferType(const char* expr) {
+    // Se a expressão começa com aspas, é texto.
+    if (expr[0] == '\"') {
+        return TYPE_STRING;
+    }
+    // Verifica se todos os caracteres são dígitos (considera apenas inteiros simples).
+    int i = 0;
+    while (expr[i] != '\0') {
+        if (!isdigit(expr[i])) {
+            break;
+        }
+        i++;
+    }
+    if (expr[i] == '\0') {
+        return TYPE_INT;
+    }
+    // Caso não seja nem literal de texto nem numérico puro, podemos assumir inteiro por padrão,
+    // ou implementar outras verificações conforme necessário.
+    return TYPE_INT;
 }
 
 %}
@@ -219,12 +241,19 @@ bloco_repita:
 atribuicao:
     IDENT RECEBE expressao ';'
     {
-        // Verifica se a variável foi declarada
+        Symbol* sym = findSymbol($1);
         if (findSymbol($1) == NULL) {
             fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", $1);
             exit(1);
         }
-
+        VarType exprType = inferType($3);
+                if (sym->type != exprType) {
+                    fprintf(stderr, "Erro semantico: Valor atribuido a '%s' e do tipo incorreto. Esperado: %s, obtido: %s.\n",
+                        $1,
+                        (sym->type == TYPE_INT ? "inteiro" : (sym->type == TYPE_BOOL ? "booleano" : "texto")),
+                        (exprType == TYPE_INT ? "inteiro" : (exprType == TYPE_BOOL ? "booleano" : "texto")));
+                    exit(1);
+                }
         $$ = malloc(strlen($1) + strlen($3) + 20);
         sprintf($$, "%s = %s;\n", $1, $3);
         free($1);
