@@ -1,6 +1,7 @@
 var inteiro: ledPin, brilho;
 var texto: ssid, senha;
 
+
 config
     ledPin = 2;
     ssid = "MinhaRedeWiFi";

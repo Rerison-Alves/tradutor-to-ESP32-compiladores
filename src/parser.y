@@ -13,6 +13,59 @@ int yylex(void);
 char* concatenarExpressao(const char* op, char* e1, char* e2);
 char* processarHttp(const char* url, const char* dados);
 
+// Definição da Tabela de Símbolos
+typedef enum { TYPE_INT, TYPE_BOOL, TYPE_STRING } VarType;
+typedef enum { UNDEFINED, INPUT, OUTPUT, PWM } PinMode;
+typedef struct Symbol {
+    char* name;
+    VarType type;
+    PinMode mode;
+    struct Symbol* next;
+} Symbol;
+
+Symbol* symbolTable = NULL;
+
+// Função para criar um símbolo
+Symbol* createSymbol(const char* name, VarType type) {
+    Symbol* newSymbol = (Symbol*) malloc(sizeof(Symbol));
+    newSymbol->name = strdup(name);
+    newSymbol->type = type;
+    newSymbol->mode = UNDEFINED;
+    newSymbol->next = NULL;
+    return newSymbol;
+}
+
+// Função para buscar um símbolo na tabela
+Symbol* findSymbol(const char* name) {
+    Symbol* current = symbolTable;
+    while (current != NULL) {
+        if (strcmp(current->name, name) == 0)
+            return current;
+        current = current->next;
+    }
+    return NULL;
+}
+
+VarType getSymbolType(const char* name) {
+    Symbol* symbol = findSymbol(name);
+    if (symbol == NULL) {
+        fprintf(stderr, "Erro semântico: Variável '%s' não foi declarada.\n", name);
+        exit(1);
+    }
+    return symbol->type;
+}
+
+// Função para inserir um símbolo na tabela
+void insertSymbol(const char* name, VarType type) {
+    if (findSymbol(name) != NULL) {
+        fprintf(stderr, "Erro semantico: Variavel '%s' ja declarada.\n", name);
+        exit(1);
+    }
+    Symbol* newSymbol = createSymbol(name, type);
+    newSymbol->next = symbolTable;
+    symbolTable = newSymbol;
+}
+
 %}
 
 %union {
@@ -61,18 +114,36 @@ declaracoes:
 declaracao_var:
     VAR tipo ':' lista_ids ';'
     {
-        if(strcmp($2, "int") == 0) {
+        // Determinar o tipo da variável
+        VarType var_type;
+        if (strcmp($2, "int") == 0) {
+            var_type = TYPE_INT;
             fprintf(output_file, "int %s;\n", $4);
-        } else if(strcmp($2, "bool") == 0) {
+        } else if (strcmp($2, "bool") == 0) {
+            var_type = TYPE_BOOL;
             fprintf(output_file, "bool %s = false;\n", $4);
         } else {
+            var_type = TYPE_STRING;
             fprintf(output_file, "String %s;\n", $4);
         }
+
+        // Adicionar cada variável na tabela de símbolos e verificar duplicatas
+        char* token = strtok($4, ", ");
+        while (token != NULL) {
+            if (findSymbol(token) != NULL) {
+                fprintf(stderr, "Erro semantico: Variavel '%s' ja foi declarada no mesmo escopo.\n", token);
+                exit(1);
+            }
+            insertSymbol(token, var_type);
+            token = strtok(NULL, ", ");
+        }
+
         free($2);
         free($4);
         $$ = strdup("");
     }
     ;
+
 
 tipo:
     INTEIRO     { $$ = strdup("int"); }
@@ -81,7 +152,7 @@ tipo:
     ;
 
 lista_ids:
-    IDENT { $$ = strdup($1); free($1); }
+    IDENT { $$ = strdup($1);  }
     | lista_ids ',' IDENT
     {
         $$ = malloc(strlen($1) + strlen($3) + 3);
@@ -148,6 +219,12 @@ bloco_repita:
 atribuicao:
     IDENT RECEBE expressao ';'
     {
+        // Verifica se a variável foi declarada
+        if (findSymbol($1) == NULL) {
+            fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", $1);
+            exit(1);
+        }
+
         $$ = malloc(strlen($1) + strlen($3) + 20);
         sprintf($$, "%s = %s;\n", $1, $3);
         free($1);
@@ -155,15 +232,26 @@ atribuicao:
     }
     ;
 
+
 controle_gpio:
     LIGAR IDENT ';'
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser ligado.\n", $2);
+                    exit(1);
+                }
         $$ = malloc(50);
         sprintf($$, "digitalWrite(%s, HIGH);\n", $2);
         free($2);
     }
     | DESLIGAR IDENT ';'
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser desligado.\n", $2);
+                    exit(1);
+                }
         $$ = malloc(50);
         sprintf($$, "digitalWrite(%s, LOW);\n", $2);
         free($2);
@@ -173,12 +261,24 @@ controle_gpio:
 config_pin:
     CONFIGURAR IDENT COMO SAIDA ';'
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", $2);
+                    exit(1);
+                }
+                sym->mode = OUTPUT;
         $$ = malloc(100);
         sprintf($$, "pinMode(%s, OUTPUT);\n", $2);
         free($2);
     }
     | CONFIGURAR IDENT COMO ENTRADA ';'
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", $2);
+                    exit(1);
+                }
+                sym->mode = INPUT;
         $$ = malloc(100);
         sprintf($$, "pinMode(%s, INPUT);\n", $2);
         free($2);
@@ -188,6 +288,12 @@ config_pin:
 config_pwm:
     CONFIG_PWM IDENT COM FREQUENCIA INTEIRO_LIT RESOLUCAO INTEIRO_LIT ';'
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado para PWM.\n", $2);
+                    exit(1);
+                }
+                sym->mode = PWM;
         $$ = malloc(200);
         sprintf($$, "ledcSetup(%d, %d, %d);\nledcAttachPin(%s, %d);\n",
                canalPWM, $5, $7, $2, canalPWM);
@@ -199,6 +305,11 @@ config_pwm:
 ajustar_pwm:
     AJUSTAR_PWM IDENT COM VALOR expressao ';'
     {
+    Symbol* sym = findSymbol($2);
+            if (sym == NULL || sym->mode != PWM) {
+                fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como PWM para ajustar o valor.\n", $2);
+                exit(1);
+            }
         $$ = malloc(100);
         sprintf($$, "ledcWrite(%d, %s);\n", canalPWM-1, $5);
         free($2);
@@ -284,10 +395,45 @@ expressao:
     | expressao MAIOR expressao     { $$ = concatenarExpressao(">", $1, $3); }
     | expressao MENOR_IGUAL expressao { $$ = concatenarExpressao("<=", $1, $3); }
     | expressao MAIOR_IGUAL expressao { $$ = concatenarExpressao(">=", $1, $3); }
-    | expressao MAIS expressao      { $$ = concatenarExpressao("+", $1, $3); }
-    | expressao MENOS expressao     { $$ = concatenarExpressao("-", $1, $3); }
-    | expressao MULT expressao      { $$ = concatenarExpressao("*", $1, $3); }
-    | expressao DIV expressao       { $$ = concatenarExpressao("/", $1, $3); }
+    | expressao MAIS expressao      {
+     VarType tipo1 = getSymbolType($1);
+             VarType tipo2 = getSymbolType($3);
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '+' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     $$ = concatenarExpressao("+", $1, $3);
+     }
+    | expressao MENOS expressao     {
+     VarType tipo1 = getSymbolType($1);
+             VarType tipo2 = getSymbolType($3);
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '-' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     $$ = concatenarExpressao("-", $1, $3);
+     }
+    | expressao MULT expressao      {
+     VarType tipo1 = getSymbolType($1);
+             VarType tipo2 = getSymbolType($3);
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '*' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     $$ = concatenarExpressao("*", $1, $3);
+     }
+    | expressao DIV expressao       {
+     VarType tipo1 = getSymbolType($1);
+             VarType tipo2 = getSymbolType($3);
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '/' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     $$ = concatenarExpressao("/", $1, $3);
+     }
     | '(' expressao ')'             { $$ = $2; }
     | INTEIRO_LIT                   { $$ = malloc(20); sprintf($$, "%d", $1); }
     | BOOL_LIT                      { $$ = malloc(10); sprintf($$, $1 ? "true" : "false"); }
@@ -300,12 +446,22 @@ expressao:
 leitura:
     LER_DIGITAL IDENT
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL || sym->mode != INPUT) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerDigital.\n", $2);
+                    exit(1);
+                }
         $$ = malloc(50);
         sprintf($$, "digitalRead(%s)", $2);
         free($2);
     }
     | LER_ANALOGICO IDENT
     {
+        Symbol* sym = findSymbol($2);
+                if (sym == NULL || sym->mode != INPUT) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerAnalogico.\n", $2);
+                    exit(1);
+                }
         $$ = malloc(50);
         sprintf($$, "analogRead(%s)", $2);
         free($2);
