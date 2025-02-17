@@ -1102,7 +1102,7 @@ YY_RULE_SETUP
 case 46:
 YY_RULE_SETUP
 #line 63 "lexer.l"
-{ yylval.ival = atoi(yytext); return INTEIRO_LIT; }
+{ printf("Token INTEIRO_LIT encontrado: %s\n", yytext); yylval.ival = atoi(yytext); return INTEIRO_LIT; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
@@ -1123,7 +1123,7 @@ YY_RULE_SETUP
 case 50:
 YY_RULE_SETUP
 #line 67 "lexer.l"
-{ printf("Token IDENT encontrado: %s\n", yytext); yylval.sval = strdup(yytext); return IDENT; }
+{ yylval.sval = strdup(yytext); return IDENT; }
 	YY_BREAK
 case 51:
 /* rule 51 can match eol */

@@ -15,7 +15,7 @@ int yylex(void);
 char* concatenarExpressao(const char* op, char* e1, char* e2);
 char* processarHttp(const char* url, const char* dados);
 
-// Definição da Tabela de Símbolos
+
 typedef enum { TYPE_INT, TYPE_BOOL, TYPE_STRING } VarType;
 typedef enum { UNDEFINED, INPUT, OUTPUT, PWM } PinMode;
 typedef struct Symbol {
@@ -27,7 +27,7 @@ typedef struct Symbol {
 
 Symbol* symbolTable = NULL;
 
-// Função para criar um símbolo
+
 Symbol* createSymbol(const char* name, VarType type) {
     Symbol* newSymbol = (Symbol*) malloc(sizeof(Symbol));
     newSymbol->name = strdup(name);
@@ -37,7 +37,7 @@ Symbol* createSymbol(const char* name, VarType type) {
     return newSymbol;
 }
 
-// Função para buscar um símbolo na tabela
+
 Symbol* findSymbol(const char* name) {
     Symbol* current = symbolTable;
     while (current != NULL) {
@@ -51,13 +51,13 @@ Symbol* findSymbol(const char* name) {
 VarType getSymbolType(const char* name) {
     Symbol* symbol = findSymbol(name);
     if (symbol == NULL) {
-        fprintf(stderr, "Erro semântico: Variável '%s' não foi declarada.\n", name);
+        fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", name);
         exit(1);
     }
     return symbol->type;
 }
 
-// Função para inserir um símbolo na tabela
+
 void insertSymbol(const char* name, VarType type) {
     if (findSymbol(name) != NULL) {
         fprintf(stderr, "Erro semantico: Variavel '%s' ja declarada.\n", name);
@@ -69,11 +69,11 @@ void insertSymbol(const char* name, VarType type) {
 }
 
 VarType inferType(const char* expr) {
-    // Se a expressão começa com aspas, é texto.
+
     if (expr[0] == '\"') {
         return TYPE_STRING;
     }
-    // Verifica se todos os caracteres são dígitos (considera apenas inteiros simples).
+
     int i = 0;
     while (expr[i] != '\0') {
         if (!isdigit(expr[i])) {
@@ -84,8 +84,7 @@ VarType inferType(const char* expr) {
     if (expr[i] == '\0') {
         return TYPE_INT;
     }
-    // Caso não seja nem literal de texto nem numérico puro, podemos assumir inteiro por padrão,
-    // ou implementar outras verificações conforme necessário.
+
     return TYPE_INT;
 }
 
@@ -137,7 +136,7 @@ declaracoes:
 declaracao_var:
     VAR tipo ':' lista_ids ';'
     {
-        // Determinar o tipo da variável
+
         VarType var_type;
         if (strcmp($2, "int") == 0) {
             var_type = TYPE_INT;
@@ -150,7 +149,7 @@ declaracao_var:
             fprintf(output_file, "String %s;\n", $4);
         }
 
-        // Adicionar cada variável na tabela de símbolos e verificar duplicatas
+
         char* token = strtok($4, ", ");
         while (token != NULL) {
             if (findSymbol(token) != NULL) {
@@ -243,11 +242,12 @@ bloco_repita:
 atribuicao:
     IDENT RECEBE expressao ';'
     {
+        printf("Atribuição para: %s\n", $1);
         Symbol* sym = findSymbol($1);
-        if (findSymbol($1) == NULL) {
-            fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", $1);
-            exit(1);
-        }
+        if (sym == NULL) {
+              fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", $1);
+              exit(1);
+                }
         VarType exprType = inferType($3);
                 if (sym->type != exprType) {
                     fprintf(stderr, "Erro semantico: Valor atribuido a '%s' e do tipo incorreto. Esperado: %s, obtido: %s.\n",
@@ -269,7 +269,7 @@ controle_gpio:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
-                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser ligado.\n", $2);
+                    fprintf(stderr, "Erro semantico: O pino '%s' precisa ser configurado como saida ou PWM para ser ligado.\n", $2);
                     exit(1);
                 }
         $$ = malloc(50);
@@ -280,7 +280,7 @@ controle_gpio:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
-                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser desligado.\n", $2);
+                    fprintf(stderr, "Erro semantico: O pino '%s' precisa ser configurado como saida ou PWM para ser desligado.\n", $2);
                     exit(1);
                 }
         $$ = malloc(50);
@@ -294,7 +294,7 @@ config_pin:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL) {
-                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", $2);
+                    fprintf(stderr, "Erro semantico: Pino '%s' nao declarado.\n", $2);
                     exit(1);
                 }
                 sym->mode = OUTPUT;
@@ -306,7 +306,7 @@ config_pin:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL) {
-                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", $2);
+                    fprintf(stderr, "Erro semantico: Pino '%s' nao declarado.\n", $2);
                     exit(1);
                 }
                 sym->mode = INPUT;
@@ -321,7 +321,7 @@ config_pwm:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL) {
-                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado para PWM.\n", $2);
+                    fprintf(stderr, "Erro semantico: Pino '%s' nao declarado para PWM.\n", $2);
                     exit(1);
                 }
                 sym->mode = PWM;
@@ -338,7 +338,7 @@ ajustar_pwm:
     {
     Symbol* sym = findSymbol($2);
             if (sym == NULL || sym->mode != PWM) {
-                fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como PWM para ajustar o valor.\n", $2);
+                fprintf(stderr, "Erro semantico: O pino '%s' precisa ser configurado como PWM para ajustar o valor.\n", $2);
                 exit(1);
             }
         $$ = malloc(100);
@@ -433,10 +433,10 @@ expressao:
     | expressao MENOR_IGUAL expressao { $$ = concatenarExpressao("<=", $1, $3); }
     | expressao MAIOR_IGUAL expressao { $$ = concatenarExpressao(">=", $1, $3); }
     | expressao MAIS expressao      {
-     VarType tipo1 = getSymbolType($1);
-             VarType tipo2 = getSymbolType($3);
+     VarType tipo1 = inferType($1);
+             VarType tipo2 = inferType($3);
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semântico: Operação '+' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operação '+' inválida para tipos não numéricos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("+", $1, $3);
@@ -446,7 +446,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semântico: Operação '-' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '-' invalida para tipos nao numéricos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("-", $1, $3);
@@ -456,7 +456,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semântico: Operação '*' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '*' invalida para tipos nao numéricos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("*", $1, $3);
@@ -466,7 +466,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semântico: Operação '/' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '/' invalida para tipos nao numéricos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("/", $1, $3);
@@ -485,7 +485,7 @@ leitura:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL || sym->mode != INPUT) {
-                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerDigital.\n", $2);
+                    fprintf(stderr, "Erro semantico: O pino '%s' precisa ser configurado como entrada para usar lerDigital.\n", $2);
                     exit(1);
                 }
         $$ = malloc(50);
@@ -496,7 +496,7 @@ leitura:
     {
         Symbol* sym = findSymbol($2);
                 if (sym == NULL || sym->mode != INPUT) {
-                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerAnalogico.\n", $2);
+                    fprintf(stderr, "Erro semantico: O pino '%s' precisa ser configurado como entrada para usar lerAnalogico.\n", $2);
                     exit(1);
                 }
         $$ = malloc(50);
@@ -554,14 +554,14 @@ int main(int argc, char *argv[]) {
     yydebug = 1;
     output_file = fopen("saida.cpp", "w");
     if(!output_file) {
-        perror("Erro ao criar arquivo de saída");
+        perror("Erro ao criar arquivo de saida");
         return 1;
     }
 
     fprintf(output_file, "#include <Arduino.h>\n");
     fprintf(output_file, "#include <WiFi.h>\n");
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
-    fprintf(output_file, "// Configuração do PWM\n");
+    fprintf(output_file, "// Configuracao do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
     fprintf(output_file, "// Resposta Http\n");
     fprintf(output_file, "int httpResponseCode = 0;\n\n");

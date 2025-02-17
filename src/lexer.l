@@ -6,8 +6,8 @@ void yyerror(const char *s);
 
 %option noyywrap
 
-LETRA   [a-zA-Z]
 DIGITO  [0-9]
+LETRA   [a-zA-Z]
 ID      {LETRA}({LETRA}|{DIGITO}|_)*
 INTEIRO {DIGITO}+
 TEXTO   \"([^\\\"]|\\.)*\"
@@ -60,11 +60,11 @@ TEXTO   \"([^\\\"]|\\.)*\"
 ";"             { return ';'; }
 ","             { return ','; }
 
-{INTEIRO}       { yylval.ival = atoi(yytext); return INTEIRO_LIT; }
+{INTEIRO}       { printf("Token INTEIRO_LIT encontrado: %s\n", yytext); yylval.ival = atoi(yytext); return INTEIRO_LIT; }
 "verdadeiro"    { yylval.ival = 1; return BOOL_LIT; }
 "falso"         { yylval.ival = 0; return BOOL_LIT; }
 {TEXTO}         { yylval.sval = strdup(yytext); return TEXTO_LIT; }
-{ID}            { printf("Token IDENT encontrado: %s\n", yytext); yylval.sval = strdup(yytext); return IDENT; }
+{ID}            { yylval.sval = strdup(yytext); return IDENT; }
 
 [ \t\n]         ; // Ignora espaços, tabs e novas linhas
 "//".*          ; // Ignora comentários
