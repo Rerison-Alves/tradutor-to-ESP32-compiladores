@@ -72,6 +72,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 FILE *output_file;
 int canalPWM = 0;
@@ -84,10 +85,84 @@ int yylex(void);
 char* concatenarExpressao(const char* op, char* e1, char* e2);
 char* processarHttp(const char* url, const char* dados);
 
+// Definição da Tabela de Símbolos
+typedef enum { TYPE_INT, TYPE_BOOL, TYPE_STRING } VarType;
+typedef enum { UNDEFINED, INPUT, OUTPUT, PWM } PinMode;
+typedef struct Symbol {
+    char* name;
+    VarType type;
+    PinMode mode;
+    struct Symbol* next;
+} Symbol;
+
+Symbol* symbolTable = NULL;
+
+// Função para criar um símbolo
+Symbol* createSymbol(const char* name, VarType type) {
+    Symbol* newSymbol = (Symbol*) malloc(sizeof(Symbol));
+    newSymbol->name = strdup(name);
+    newSymbol->type = type;
+    newSymbol->mode = UNDEFINED;
+    newSymbol->next = NULL;
+    return newSymbol;
+}
+
+// Função para buscar um símbolo na tabela
+Symbol* findSymbol(const char* name) {
+    Symbol* current = symbolTable;
+    while (current != NULL) {
+        if (strcmp(current->name, name) == 0)
+            return current;
+        current = current->next;
+    }
+    return NULL;
+}
+
+VarType getSymbolType(const char* name) {
+    Symbol* symbol = findSymbol(name);
+    if (symbol == NULL) {
+        fprintf(stderr, "Erro semântico: Variável '%s' não foi declarada.\n", name);
+        exit(1);
+    }
+    return symbol->type;
+}
+
+// Função para inserir um símbolo na tabela
+void insertSymbol(const char* name, VarType type) {
+    if (findSymbol(name) != NULL) {
+        fprintf(stderr, "Erro semantico: Variavel '%s' ja declarada.\n", name);
+        exit(1);
+    }
+    Symbol* newSymbol = createSymbol(name, type);
+    newSymbol->next = symbolTable;
+    symbolTable = newSymbol;
+}
+
+VarType inferType(const char* expr) {
+    // Se a expressão começa com aspas, é texto.
+    if (expr[0] == '\"') {
+        return TYPE_STRING;
+    }
+    // Verifica se todos os caracteres são dígitos (considera apenas inteiros simples).
+    int i = 0;
+    while (expr[i] != '\0') {
+        if (!isdigit(expr[i])) {
+            break;
+        }
+        i++;
+    }
+    if (expr[i] == '\0') {
+        return TYPE_INT;
+    }
+    // Caso não seja nem literal de texto nem numérico puro, podemos assumir inteiro por padrão,
+    // ou implementar outras verificações conforme necessário.
+    return TYPE_INT;
+}
+
 
 
 /* Line 189 of yacc.c  */
-#line 91 "parser.tab.c"
+#line 166 "parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -170,7 +245,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 19 "parser.y"
+#line 94 "parser.y"
 
     int ival;
     char *sval;
@@ -178,7 +253,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 182 "parser.tab.c"
+#line 257 "parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -190,7 +265,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 194 "parser.tab.c"
+#line 269 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -504,13 +579,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    49,    49,    58,    59,    63,    79,    80,    81,    85,
-      86,    96,   105,   106,   116,   117,   118,   119,   120,   124,
-     128,   129,   139,   140,   141,   142,   143,   144,   145,   146,
-     147,   151,   161,   167,   176,   182,   191,   202,   212,   229,
-     237,   246,   255,   261,   270,   280,   289,   290,   291,   292,
-     293,   294,   295,   296,   297,   298,   299,   300,   301,   302,
-     303,   304,   305,   309,   315,   324,   325,   335
+       0,   124,   124,   133,   134,   138,   172,   173,   174,   178,
+     179,   189,   198,   199,   209,   210,   211,   212,   213,   217,
+     221,   222,   232,   233,   234,   235,   236,   237,   238,   239,
+     240,   244,   268,   279,   293,   305,   320,   337,   352,   369,
+     377,   386,   395,   401,   410,   420,   429,   430,   431,   432,
+     433,   434,   435,   444,   454,   464,   474,   475,   476,   477,
+     478,   479,   480,   484,   495,   509,   510,   520
 };
 #endif
 
@@ -1540,7 +1615,7 @@ yyreduce:
         case 2:
 
 /* Line 1464 of yacc.c  */
-#line 50 "parser.y"
+#line 125 "parser.y"
     {
         fprintf(output_file, "}\n\nvoid loop() {\n%s}\n", (yyvsp[(3) - (3)].sval));
         free((yyvsp[(3) - (3)].sval));
@@ -1551,29 +1626,46 @@ yyreduce:
   case 3:
 
 /* Line 1464 of yacc.c  */
-#line 58 "parser.y"
+#line 133 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 4:
 
 /* Line 1464 of yacc.c  */
-#line 59 "parser.y"
+#line 134 "parser.y"
     { free((yyvsp[(1) - (2)].sval)); free((yyvsp[(2) - (2)].sval)); (yyval.sval) = strdup(""); ;}
     break;
 
   case 5:
 
 /* Line 1464 of yacc.c  */
-#line 64 "parser.y"
+#line 139 "parser.y"
     {
-        if(strcmp((yyvsp[(2) - (5)].sval), "int") == 0) {
+        // Determinar o tipo da variável
+        VarType var_type;
+        if (strcmp((yyvsp[(2) - (5)].sval), "int") == 0) {
+            var_type = TYPE_INT;
             fprintf(output_file, "int %s;\n", (yyvsp[(4) - (5)].sval));
-        } else if(strcmp((yyvsp[(2) - (5)].sval), "bool") == 0) {
+        } else if (strcmp((yyvsp[(2) - (5)].sval), "bool") == 0) {
+            var_type = TYPE_BOOL;
             fprintf(output_file, "bool %s = false;\n", (yyvsp[(4) - (5)].sval));
         } else {
+            var_type = TYPE_STRING;
             fprintf(output_file, "String %s;\n", (yyvsp[(4) - (5)].sval));
         }
+
+        // Adicionar cada variável na tabela de símbolos e verificar duplicatas
+        char* token = strtok((yyvsp[(4) - (5)].sval), ", ");
+        while (token != NULL) {
+            if (findSymbol(token) != NULL) {
+                fprintf(stderr, "Erro semantico: Variavel '%s' ja foi declarada no mesmo escopo.\n", token);
+                exit(1);
+            }
+            insertSymbol(token, var_type);
+            token = strtok(NULL, ", ");
+        }
+
         free((yyvsp[(2) - (5)].sval));
         free((yyvsp[(4) - (5)].sval));
         (yyval.sval) = strdup("");
@@ -1583,35 +1675,35 @@ yyreduce:
   case 6:
 
 /* Line 1464 of yacc.c  */
-#line 79 "parser.y"
+#line 172 "parser.y"
     { (yyval.sval) = strdup("int"); ;}
     break;
 
   case 7:
 
 /* Line 1464 of yacc.c  */
-#line 80 "parser.y"
+#line 173 "parser.y"
     { (yyval.sval) = strdup("bool"); ;}
     break;
 
   case 8:
 
 /* Line 1464 of yacc.c  */
-#line 81 "parser.y"
+#line 174 "parser.y"
     { (yyval.sval) = strdup("String"); ;}
     break;
 
   case 9:
 
 /* Line 1464 of yacc.c  */
-#line 85 "parser.y"
-    { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
+#line 178 "parser.y"
+    { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval));  ;}
     break;
 
   case 10:
 
 /* Line 1464 of yacc.c  */
-#line 87 "parser.y"
+#line 180 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (3)].sval)) + strlen((yyvsp[(3) - (3)].sval)) + 3);
         sprintf((yyval.sval), "%s, %s", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -1623,7 +1715,7 @@ yyreduce:
   case 11:
 
 /* Line 1464 of yacc.c  */
-#line 97 "parser.y"
+#line 190 "parser.y"
     {
         fprintf(output_file, "\nvoid setup() {\n%s", (yyvsp[(2) - (3)].sval));
         free((yyvsp[(2) - (3)].sval));
@@ -1634,14 +1726,14 @@ yyreduce:
   case 12:
 
 /* Line 1464 of yacc.c  */
-#line 105 "parser.y"
+#line 198 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 13:
 
 /* Line 1464 of yacc.c  */
-#line 107 "parser.y"
+#line 200 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -1653,21 +1745,21 @@ yyreduce:
   case 19:
 
 /* Line 1464 of yacc.c  */
-#line 124 "parser.y"
+#line 217 "parser.y"
     { (yyval.sval) = (yyvsp[(2) - (3)].sval); ;}
     break;
 
   case 20:
 
 /* Line 1464 of yacc.c  */
-#line 128 "parser.y"
+#line 221 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 21:
 
 /* Line 1464 of yacc.c  */
-#line 130 "parser.y"
+#line 223 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -1679,8 +1771,21 @@ yyreduce:
   case 31:
 
 /* Line 1464 of yacc.c  */
-#line 152 "parser.y"
+#line 245 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(1) - (4)].sval));
+        if (findSymbol((yyvsp[(1) - (4)].sval)) == NULL) {
+            fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", (yyvsp[(1) - (4)].sval));
+            exit(1);
+        }
+        VarType exprType = inferType((yyvsp[(3) - (4)].sval));
+                if (sym->type != exprType) {
+                    fprintf(stderr, "Erro semantico: Valor atribuido a '%s' e do tipo incorreto. Esperado: %s, obtido: %s.\n",
+                        (yyvsp[(1) - (4)].sval),
+                        (sym->type == TYPE_INT ? "inteiro" : (sym->type == TYPE_BOOL ? "booleano" : "texto")),
+                        (exprType == TYPE_INT ? "inteiro" : (exprType == TYPE_BOOL ? "booleano" : "texto")));
+                    exit(1);
+                }
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (4)].sval)) + strlen((yyvsp[(3) - (4)].sval)) + 20);
         sprintf((yyval.sval), "%s = %s;\n", (yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].sval));
         free((yyvsp[(1) - (4)].sval));
@@ -1691,8 +1796,13 @@ yyreduce:
   case 32:
 
 /* Line 1464 of yacc.c  */
-#line 162 "parser.y"
+#line 269 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (3)].sval));
+                if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser ligado.\n", (yyvsp[(2) - (3)].sval));
+                    exit(1);
+                }
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalWrite(%s, HIGH);\n", (yyvsp[(2) - (3)].sval));
         free((yyvsp[(2) - (3)].sval));
@@ -1702,8 +1812,13 @@ yyreduce:
   case 33:
 
 /* Line 1464 of yacc.c  */
-#line 168 "parser.y"
+#line 280 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (3)].sval));
+                if (sym == NULL || (sym->mode != OUTPUT && sym->mode != PWM)) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como saída ou PWM para ser desligado.\n", (yyvsp[(2) - (3)].sval));
+                    exit(1);
+                }
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalWrite(%s, LOW);\n", (yyvsp[(2) - (3)].sval));
         free((yyvsp[(2) - (3)].sval));
@@ -1713,8 +1828,14 @@ yyreduce:
   case 34:
 
 /* Line 1464 of yacc.c  */
-#line 177 "parser.y"
+#line 294 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (5)].sval));
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", (yyvsp[(2) - (5)].sval));
+                    exit(1);
+                }
+                sym->mode = OUTPUT;
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "pinMode(%s, OUTPUT);\n", (yyvsp[(2) - (5)].sval));
         free((yyvsp[(2) - (5)].sval));
@@ -1724,8 +1845,14 @@ yyreduce:
   case 35:
 
 /* Line 1464 of yacc.c  */
-#line 183 "parser.y"
+#line 306 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (5)].sval));
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado.\n", (yyvsp[(2) - (5)].sval));
+                    exit(1);
+                }
+                sym->mode = INPUT;
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "pinMode(%s, INPUT);\n", (yyvsp[(2) - (5)].sval));
         free((yyvsp[(2) - (5)].sval));
@@ -1735,8 +1862,14 @@ yyreduce:
   case 36:
 
 /* Line 1464 of yacc.c  */
-#line 192 "parser.y"
+#line 321 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (8)].sval));
+                if (sym == NULL) {
+                    fprintf(stderr, "Erro semântico: Pino '%s' não declarado para PWM.\n", (yyvsp[(2) - (8)].sval));
+                    exit(1);
+                }
+                sym->mode = PWM;
         (yyval.sval) = malloc(200);
         sprintf((yyval.sval), "ledcSetup(%d, %d, %d);\nledcAttachPin(%s, %d);\n",
                canalPWM, (yyvsp[(5) - (8)].ival), (yyvsp[(7) - (8)].ival), (yyvsp[(2) - (8)].sval), canalPWM);
@@ -1748,8 +1881,13 @@ yyreduce:
   case 37:
 
 /* Line 1464 of yacc.c  */
-#line 203 "parser.y"
+#line 338 "parser.y"
     {
+    Symbol* sym = findSymbol((yyvsp[(2) - (6)].sval));
+            if (sym == NULL || sym->mode != PWM) {
+                fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como PWM para ajustar o valor.\n", (yyvsp[(2) - (6)].sval));
+                exit(1);
+            }
         (yyval.sval) = malloc(100);
         sprintf((yyval.sval), "ledcWrite(canalPWM, %s);\n", (yyvsp[(5) - (6)].sval));
         free((yyvsp[(2) - (6)].sval));
@@ -1760,7 +1898,7 @@ yyreduce:
   case 38:
 
 /* Line 1464 of yacc.c  */
-#line 213 "parser.y"
+#line 353 "parser.y"
     {
         (yyval.sval) = malloc(500);
         sprintf((yyval.sval),
@@ -1779,7 +1917,7 @@ yyreduce:
   case 39:
 
 /* Line 1464 of yacc.c  */
-#line 230 "parser.y"
+#line 370 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "Serial.begin(%d);\n", (yyvsp[(2) - (3)].ival));
@@ -1789,7 +1927,7 @@ yyreduce:
   case 40:
 
 /* Line 1464 of yacc.c  */
-#line 238 "parser.y"
+#line 378 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(2) - (3)].sval)) + 30);
         sprintf((yyval.sval), "Serial.println(%s);\n", (yyvsp[(2) - (3)].sval));
@@ -1800,7 +1938,7 @@ yyreduce:
   case 41:
 
 /* Line 1464 of yacc.c  */
-#line 247 "parser.y"
+#line 387 "parser.y"
     {
         (yyval.sval) = processarHttp((yyvsp[(2) - (4)].sval), (yyvsp[(3) - (4)].sval));
         free((yyvsp[(2) - (4)].sval));
@@ -1811,7 +1949,7 @@ yyreduce:
   case 42:
 
 /* Line 1464 of yacc.c  */
-#line 256 "parser.y"
+#line 396 "parser.y"
     {
           (yyval.sval) = malloc(strlen((yyvsp[(2) - (7)].sval)) + strlen((yyvsp[(4) - (7)].sval)) + strlen((yyvsp[(6) - (7)].sval)) + 50);
           sprintf((yyval.sval), "if (%s) {\n%s} else {\n%s}\n", (yyvsp[(2) - (7)].sval), (yyvsp[(4) - (7)].sval), (yyvsp[(6) - (7)].sval));
@@ -1822,7 +1960,7 @@ yyreduce:
   case 43:
 
 /* Line 1464 of yacc.c  */
-#line 262 "parser.y"
+#line 402 "parser.y"
     {
           (yyval.sval) = malloc(strlen((yyvsp[(2) - (5)].sval)) + strlen((yyvsp[(4) - (5)].sval)) + 50);
           sprintf((yyval.sval), "if (%s) {\n%s}\n", (yyvsp[(2) - (5)].sval), (yyvsp[(4) - (5)].sval));
@@ -1833,7 +1971,7 @@ yyreduce:
   case 44:
 
 /* Line 1464 of yacc.c  */
-#line 271 "parser.y"
+#line 411 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(2) - (5)].sval)) + strlen((yyvsp[(4) - (5)].sval)) + 50);
         sprintf((yyval.sval), "while (%s) {\n%s}\n", (yyvsp[(2) - (5)].sval), (yyvsp[(4) - (5)].sval));
@@ -1845,7 +1983,7 @@ yyreduce:
   case 45:
 
 /* Line 1464 of yacc.c  */
-#line 281 "parser.y"
+#line 421 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(2) - (3)].sval)) + 50);
         sprintf((yyval.sval), "while(true) {\n%s}\n", (yyvsp[(2) - (3)].sval));
@@ -1856,127 +1994,167 @@ yyreduce:
   case 46:
 
 /* Line 1464 of yacc.c  */
-#line 289 "parser.y"
+#line 429 "parser.y"
     { (yyval.sval) = concatenarExpressao("==", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 47:
 
 /* Line 1464 of yacc.c  */
-#line 290 "parser.y"
+#line 430 "parser.y"
     { (yyval.sval) = concatenarExpressao("!=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 48:
 
 /* Line 1464 of yacc.c  */
-#line 291 "parser.y"
+#line 431 "parser.y"
     { (yyval.sval) = concatenarExpressao("<", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 49:
 
 /* Line 1464 of yacc.c  */
-#line 292 "parser.y"
+#line 432 "parser.y"
     { (yyval.sval) = concatenarExpressao(">", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 50:
 
 /* Line 1464 of yacc.c  */
-#line 293 "parser.y"
+#line 433 "parser.y"
     { (yyval.sval) = concatenarExpressao("<=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 51:
 
 /* Line 1464 of yacc.c  */
-#line 294 "parser.y"
+#line 434 "parser.y"
     { (yyval.sval) = concatenarExpressao(">=", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
     break;
 
   case 52:
 
 /* Line 1464 of yacc.c  */
-#line 295 "parser.y"
-    { (yyval.sval) = concatenarExpressao("+", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
+#line 435 "parser.y"
+    {
+     VarType tipo1 = getSymbolType((yyvsp[(1) - (3)].sval));
+             VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '+' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     (yyval.sval) = concatenarExpressao("+", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
+     ;}
     break;
 
   case 53:
 
 /* Line 1464 of yacc.c  */
-#line 296 "parser.y"
-    { (yyval.sval) = concatenarExpressao("-", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
+#line 444 "parser.y"
+    {
+     VarType tipo1 = getSymbolType((yyvsp[(1) - (3)].sval));
+             VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '-' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     (yyval.sval) = concatenarExpressao("-", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
+     ;}
     break;
 
   case 54:
 
 /* Line 1464 of yacc.c  */
-#line 297 "parser.y"
-    { (yyval.sval) = concatenarExpressao("*", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
+#line 454 "parser.y"
+    {
+     VarType tipo1 = getSymbolType((yyvsp[(1) - (3)].sval));
+             VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '*' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     (yyval.sval) = concatenarExpressao("*", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
+     ;}
     break;
 
   case 55:
 
 /* Line 1464 of yacc.c  */
-#line 298 "parser.y"
-    { (yyval.sval) = concatenarExpressao("/", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)); ;}
+#line 464 "parser.y"
+    {
+     VarType tipo1 = getSymbolType((yyvsp[(1) - (3)].sval));
+             VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
+
+             if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
+                 fprintf(stderr, "Erro semântico: Operação '/' inválida para tipos não numéricos.\n");
+                 exit(1);
+             }
+     (yyval.sval) = concatenarExpressao("/", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
+     ;}
     break;
 
   case 56:
 
 /* Line 1464 of yacc.c  */
-#line 299 "parser.y"
+#line 474 "parser.y"
     { (yyval.sval) = (yyvsp[(2) - (3)].sval); ;}
     break;
 
   case 57:
 
 /* Line 1464 of yacc.c  */
-#line 300 "parser.y"
+#line 475 "parser.y"
     { (yyval.sval) = malloc(20); sprintf((yyval.sval), "%d", (yyvsp[(1) - (1)].ival)); ;}
     break;
 
   case 58:
 
 /* Line 1464 of yacc.c  */
-#line 301 "parser.y"
+#line 476 "parser.y"
     { (yyval.sval) = malloc(10); sprintf((yyval.sval), (yyvsp[(1) - (1)].ival) ? "true" : "false"); ;}
     break;
 
   case 59:
 
 /* Line 1464 of yacc.c  */
-#line 302 "parser.y"
+#line 477 "parser.y"
     { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 60:
 
 /* Line 1464 of yacc.c  */
-#line 303 "parser.y"
+#line 478 "parser.y"
     { (yyval.sval) = strdup((yyvsp[(1) - (1)].sval)); free((yyvsp[(1) - (1)].sval)); ;}
     break;
 
   case 61:
 
 /* Line 1464 of yacc.c  */
-#line 304 "parser.y"
+#line 479 "parser.y"
     { (yyval.sval) = (yyvsp[(1) - (1)].sval); ;}
     break;
 
   case 62:
 
 /* Line 1464 of yacc.c  */
-#line 305 "parser.y"
+#line 480 "parser.y"
     { (yyval.sval) = strdup("Serial.readString()"); ;}
     break;
 
   case 63:
 
 /* Line 1464 of yacc.c  */
-#line 310 "parser.y"
+#line 485 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (2)].sval));
+                if (sym == NULL || sym->mode != INPUT) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerDigital.\n", (yyvsp[(2) - (2)].sval));
+                    exit(1);
+                }
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "digitalRead(%s)", (yyvsp[(2) - (2)].sval));
         free((yyvsp[(2) - (2)].sval));
@@ -1986,8 +2164,13 @@ yyreduce:
   case 64:
 
 /* Line 1464 of yacc.c  */
-#line 316 "parser.y"
+#line 496 "parser.y"
     {
+        Symbol* sym = findSymbol((yyvsp[(2) - (2)].sval));
+                if (sym == NULL || sym->mode != INPUT) {
+                    fprintf(stderr, "Erro semântico: O pino '%s' precisa ser configurado como entrada para usar lerAnalogico.\n", (yyvsp[(2) - (2)].sval));
+                    exit(1);
+                }
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "analogRead(%s)", (yyvsp[(2) - (2)].sval));
         free((yyvsp[(2) - (2)].sval));
@@ -1997,14 +2180,14 @@ yyreduce:
   case 65:
 
 /* Line 1464 of yacc.c  */
-#line 324 "parser.y"
+#line 509 "parser.y"
     { (yyval.sval) = strdup(""); ;}
     break;
 
   case 66:
 
 /* Line 1464 of yacc.c  */
-#line 326 "parser.y"
+#line 511 "parser.y"
     {
         (yyval.sval) = malloc(strlen((yyvsp[(1) - (2)].sval)) + strlen((yyvsp[(2) - (2)].sval)) + 1);
         sprintf((yyval.sval), "%s%s", (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].sval));
@@ -2016,7 +2199,7 @@ yyreduce:
   case 67:
 
 /* Line 1464 of yacc.c  */
-#line 336 "parser.y"
+#line 521 "parser.y"
     {
         (yyval.sval) = malloc(50);
         sprintf((yyval.sval), "delay(%d);\n", (yyvsp[(2) - (3)].ival));
@@ -2026,7 +2209,7 @@ yyreduce:
 
 
 /* Line 1464 of yacc.c  */
-#line 2030 "parser.tab.c"
+#line 2213 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2238,7 +2421,7 @@ yyreturn:
 
 
 /* Line 1684 of yacc.c  */
-#line 342 "parser.y"
+#line 527 "parser.y"
 
 
 void yyerror(const char *s) {

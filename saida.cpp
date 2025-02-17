@@ -8,28 +8,29 @@ int canalPWM = 0;
 // Resposta Http
 int httpResponseCode = 0;
 
-int i;
-int j;
+int ledPin, brilho;
+String ssid, senha;
 
 void setup() {
-Serial.begin(115200);
+ledPin = 2;
+ssid = "MinhaRedeWiFi";
+senha = "MinhaSenhaWiFi";
+pinMode(ledPin, OUTPUT);
+ledcSetup(0, 5000, 8);
+ledcAttachPin(ledPin, 0);
+WiFi.begin(ssid.c_str(), senha.c_str());
+while(WiFi.status() != WL_CONNECTED) {
+  delay(500);
+  Serial.println("Conectando ao WiFi...");
+}
+Serial.println("Conectado ao WiFi!");
 }
 
 void loop() {
-    j = 2;
-    while(true) {
-    Serial.println(j);
-        j = (j + 2);
-    }
-    i = 1;
-    while ((i <= 10)) {
-        Serial.println(i);
-        i = (i + 1);
-    }
-    if ((i <= 10)) {
-        Serial.println(i);
-    } else {
-        Serial.println(j);
-    }
-    delay(2000);
+brilho = 128;
+ledcWrite(canalPWM, brilho);
+delay(1000);
+brilho = 0;
+ledcWrite(canalPWM, brilho);
+delay(1000);
 }
