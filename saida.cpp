@@ -5,31 +5,35 @@
 // Configuracao do PWM
 int canalPWM = 0;
 
-// Resposta Http
+// Envio Http
+HTTPClient http;
 int httpResponseCode = 0;
 
-int i;
-int j;
+int led_pin;
+String wifi_ssid, wifi_pass;
 
 void setup() {
+pinMode(led_pin, OUTPUT);
 Serial.begin(115200);
+WiFi.begin(wifi_ssid.c_str(), wifi_pass.c_str());
+while(WiFi.status() != WL_CONNECTED) {
+  delay(500);
+  Serial.println("Conectando ao WiFi...");
+}
+Serial.println("Conectado ao WiFi!");
 }
 
 void loop() {
-j = 2;
-while(true) {
-Serial.println(j);
-j = (j + 2);
-}
-i = 1;
-while ((i <= 10)) {
-Serial.println(i);
-i = (i + 1);
-}
-if ((i <= 10)) {
-Serial.println(i);
-} else {
-Serial.println(j);
-}
-delay(2000);
+digitalWrite(led_pin, HIGH);
+http.begin("http://example.com/api");
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+httpResponseCode = http.POST("led=on");
+http.end();
+delay(1000);
+digitalWrite(led_pin, LOW);
+http.begin("http://example.com/api");
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+httpResponseCode = http.POST("led=off");
+http.end();
+delay(1000);
 }

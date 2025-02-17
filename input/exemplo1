@@ -1,4 +1,4 @@
-var inteiro: ledPin, brilho;
+var inteiro: ledPin, brilho, brilho;
 var texto: ssid, senha;
 
 

@@ -242,7 +242,7 @@ bloco_repita:
 atribuicao:
     IDENT RECEBE expressao ';'
     {
-        printf("Atribuição para: %s\n", $1);
+        printf("Atribuicao para: %s\n", $1);
         Symbol* sym = findSymbol($1);
         if (sym == NULL) {
               fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", $1);
@@ -436,7 +436,7 @@ expressao:
      VarType tipo1 = inferType($1);
              VarType tipo2 = inferType($3);
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operação '+' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '+' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("+", $1, $3);
@@ -446,7 +446,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '-' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '-' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("-", $1, $3);
@@ -456,7 +456,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '*' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '*' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("*", $1, $3);
@@ -466,7 +466,7 @@ expressao:
              VarType tipo2 = getSymbolType($3);
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '/' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '/' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      $$ = concatenarExpressao("/", $1, $3);
@@ -541,7 +541,6 @@ char* concatenarExpressao(const char* op, char* e1, char* e2) {
 char* processarHttp(const char* url, const char* dados) {
     char* result = malloc(500);
     sprintf(result,
-        "HTTPClient http;\n"
         "http.begin(%s);\n"
         "http.addHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\n"
         "httpResponseCode = http.POST(%s);\n"
@@ -563,7 +562,8 @@ int main(int argc, char *argv[]) {
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuracao do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
-    fprintf(output_file, "// Resposta Http\n");
+    fprintf(output_file, "// Envio Http\n");
+    fprintf(output_file, "HTTPClient http;\n");
     fprintf(output_file, "int httpResponseCode = 0;\n\n");
 
     yyparse();

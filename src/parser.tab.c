@@ -1772,7 +1772,7 @@ yyreduce:
 /* Line 1464 of yacc.c  */
 #line 244 "parser.y"
     {
-        printf("Atribuição para: %s\n", (yyvsp[(1) - (4)].sval));
+        printf("Atribuicao para: %s\n", (yyvsp[(1) - (4)].sval));
         Symbol* sym = findSymbol((yyvsp[(1) - (4)].sval));
         if (sym == NULL) {
               fprintf(stderr, "Erro semantico: Variavel '%s' nao foi declarada.\n", (yyvsp[(1) - (4)].sval));
@@ -2041,7 +2041,7 @@ yyreduce:
      VarType tipo1 = inferType((yyvsp[(1) - (3)].sval));
              VarType tipo2 = inferType((yyvsp[(3) - (3)].sval));
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operação '+' inválida para tipos não numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '+' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      (yyval.sval) = concatenarExpressao("+", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -2057,7 +2057,7 @@ yyreduce:
              VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '-' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '-' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      (yyval.sval) = concatenarExpressao("-", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -2073,7 +2073,7 @@ yyreduce:
              VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '*' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '*' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      (yyval.sval) = concatenarExpressao("*", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -2089,7 +2089,7 @@ yyreduce:
              VarType tipo2 = getSymbolType((yyvsp[(3) - (3)].sval));
 
              if (tipo1 != TYPE_INT || tipo2 != TYPE_INT) {
-                 fprintf(stderr, "Erro semantico: Operacao '/' invalida para tipos nao numéricos.\n");
+                 fprintf(stderr, "Erro semantico: Operacao '/' invalida para tipos nao numericos.\n");
                  exit(1);
              }
      (yyval.sval) = concatenarExpressao("/", (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval));
@@ -2439,7 +2439,6 @@ char* concatenarExpressao(const char* op, char* e1, char* e2) {
 char* processarHttp(const char* url, const char* dados) {
     char* result = malloc(500);
     sprintf(result,
-        "HTTPClient http;\n"
         "http.begin(%s);\n"
         "http.addHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\n"
         "httpResponseCode = http.POST(%s);\n"
@@ -2461,7 +2460,8 @@ int main(int argc, char *argv[]) {
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuracao do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
-    fprintf(output_file, "// Resposta Http\n");
+    fprintf(output_file, "// Envio Http\n");
+    fprintf(output_file, "HTTPClient http;\n");
     fprintf(output_file, "int httpResponseCode = 0;\n\n");
 
     yyparse();
