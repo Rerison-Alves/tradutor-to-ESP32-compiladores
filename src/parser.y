@@ -5,6 +5,7 @@
 
 FILE *output_file;
 int canalPWM = 0;
+int httpResponseCode = 0;
 int currentLine = 1;
 
 void yyerror(const char *s);
@@ -26,7 +27,7 @@ char* processarHttp(const char* url, const char* dados);
 %token COM FREQUENCIA RESOLUCAO CONECTAR_WIFI ENVIAR_HTTP
 %token CONFIG_SERIAL ESCREVER_SERIAL LER_SERIAL ESPERAR
 %token SE SENAO ENTAO ENQUANTO VALOR
-%token IGUAL DIFERENTE MENOR MAIOR MENOR_IGUAL MAIOR_IGUAL
+%token RECEBE IGUAL DIFERENTE MENOR MAIOR MENOR_IGUAL MAIOR_IGUAL
 %token MAIS MENOS MULT DIV
 %token <ival> INTEIRO_LIT BOOL_LIT
 %token <sval> TEXTO_LIT IDENT
@@ -35,7 +36,7 @@ char* processarHttp(const char* url, const char* dados);
 %type <sval> config blocos_config bloco_config repita blocos_repita
 %type <sval> bloco_repita atribuicao controle_gpio config_pin config_pwm
 %type <sval> ajustar_pwm conectar_wifi config_serial escrever_serial
-%type <sval> enviar_http condicional cond_else enquanto_loop expressao
+%type <sval> enviar_http condicional enquanto_expressao enquanto_loop expressao
 %type <sval> leitura comandos esperar
 
 %left MAIS MENOS
@@ -140,13 +141,14 @@ bloco_repita:
     | ajustar_pwm
     | esperar
     | condicional
+    | enquanto_expressao
     | enquanto_loop
     | enviar_http
     | escrever_serial
     ;
 
 atribuicao:
-    IDENT '=' expressao ';'
+    IDENT RECEBE expressao ';'
     {
         $$ = malloc(strlen($1) + strlen($3) + 20);
         sprintf($$, "%s = %s;\n", $1, $3);
@@ -200,7 +202,7 @@ ajustar_pwm:
     AJUSTAR_PWM IDENT COM VALOR expressao ';'
     {
         $$ = malloc(100);
-        sprintf($$, "ledcWrite(%d, %s);\n", canalPWM-1, $5);
+        sprintf($$, "ledcWrite(canalPWM, %s);\n", $5);
         free($2);
         free($5);
     }
@@ -250,32 +252,38 @@ enviar_http:
     ;
 
 condicional:
-    SE expressao ENTAO '\n' comandos cond_else FIM
-    {
-        $$ = malloc(strlen($2) + strlen($5) + strlen($6) + 50);
-        sprintf($$, "if (%s) {\n%s%s}\n", $2, $5, $6);
-        free($2); free($5); free($6);
-    }
-    ;
+      SE expressao ENTAO comandos SENAO comandos FIM
+      {
+          $$ = malloc(strlen($2) + strlen($4) + strlen($6) + 50);
+          sprintf($$, "if (%s) {\n%s} else {\n%s}\n", $2, $4, $6);
+          free($2); free($4); free($6);
+      }
+      | SE expressao ENTAO comandos FIM
+      {
+          $$ = malloc(strlen($2) + strlen($4) + 50);
+          sprintf($$, "if (%s) {\n%s}\n", $2, $4);
+          free($2); free($4);
+      }
+;
 
-cond_else:
-    /* empty */ { $$ = strdup(""); }
-    | SENAO '\n' comandos
+enquanto_expressao:
+    ENQUANTO expressao ENTAO comandos FIM
     {
-        $$ = malloc(strlen($3) + 20);
-        sprintf($$, "else {\n%s}\n", $3);
-        free($3);
+        $$ = malloc(strlen($2) + strlen($4) + 50);
+        sprintf($$, "while (%s) {\n%s}\n", $2, $4);
+        free($2);
+        free($4);
     }
-    ;
+;
 
 enquanto_loop:
-    ENQUANTO '\n' comandos FIM
+    ENQUANTO comandos FIM
     {
-        $$ = malloc(strlen($3) + 50);
-        sprintf($$, "while(true) {\n%s}\n", $3);
-        free($3);
+        $$ = malloc(strlen($2) + 50);
+        sprintf($$, "while(true) {\n%s}\n", $2);
+        free($2);
     }
-    ;
+;
 
 expressao:
     expressao IGUAL expressao       { $$ = concatenarExpressao("==", $1, $3); }
@@ -351,7 +359,7 @@ char* processarHttp(const char* url, const char* dados) {
         "HTTPClient http;\n"
         "http.begin(%s);\n"
         "http.addHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\n"
-        "int httpResponseCode = http.POST(%s);\n"
+        "httpResponseCode = http.POST(%s);\n"
         "http.end();\n",
         url, dados);
     return result;
@@ -370,6 +378,8 @@ int main(int argc, char *argv[]) {
     fprintf(output_file, "#include <HTTPClient.h>\n\n");
     fprintf(output_file, "// Configuração do PWM\n");
     fprintf(output_file, "int canalPWM = 0;\n\n");
+    fprintf(output_file, "// Resposta Http\n");
+    fprintf(output_file, "int httpResponseCode = 0;\n\n");
 
     yyparse();
     return 0;

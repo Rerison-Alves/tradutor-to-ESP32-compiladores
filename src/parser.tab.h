@@ -69,20 +69,21 @@
      ENTAO = 286,
      ENQUANTO = 287,
      VALOR = 288,
-     IGUAL = 289,
-     DIFERENTE = 290,
-     MENOR = 291,
-     MAIOR = 292,
-     MENOR_IGUAL = 293,
-     MAIOR_IGUAL = 294,
-     MAIS = 295,
-     MENOS = 296,
-     MULT = 297,
-     DIV = 298,
-     INTEIRO_LIT = 299,
-     BOOL_LIT = 300,
-     TEXTO_LIT = 301,
-     IDENT = 302
+     RECEBE = 289,
+     IGUAL = 290,
+     DIFERENTE = 291,
+     MENOR = 292,
+     MAIOR = 293,
+     MENOR_IGUAL = 294,
+     MAIOR_IGUAL = 295,
+     MAIS = 296,
+     MENOS = 297,
+     MULT = 298,
+     DIV = 299,
+     INTEIRO_LIT = 300,
+     BOOL_LIT = 301,
+     TEXTO_LIT = 302,
+     IDENT = 303
    };
 #endif
 
@@ -93,7 +94,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1685 of yacc.c  */
-#line 18 "parser.y"
+#line 19 "parser.y"
 
     int ival;
     char *sval;
@@ -101,7 +102,7 @@ typedef union YYSTYPE
 
 
 /* Line 1685 of yacc.c  */
-#line 105 "parser.tab.h"
+#line 106 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
